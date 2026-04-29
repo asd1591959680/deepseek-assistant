@@ -13,6 +13,7 @@ watch(
   currentMessages,
   async () => {
     await nextTick();
+    console.log(messagesRef.value?.scrollHeight);
     if (messagesRef.value) {
       messagesRef.value.scrollTop = messagesRef.value.scrollHeight;
     }
@@ -24,8 +25,8 @@ const handleSend = async (content: string) => {
 };
 </script>
 <template>
-  <Topbar></Topbar>
-  <Main v-if="currentMessages.length === 0"></Main>
+  <Topbar class="top-wrap"></Topbar>
+  <Main class="main-wrap" v-if="currentMessages.length === 0"></Main>
   <div class="messages" ref="messagesRef">
     <Message
       v-for="(msg, index) in currentMessages"
@@ -36,10 +37,6 @@ const handleSend = async (content: string) => {
   <ChatInput class="input-wrap" @send="handleSend"></ChatInput>
 </template>
 <style lang="scss" scoped>
-.page-container {
-  margin-top: 24px;
-  padding: 0px 32px;
-}
 .input-wrap {
   width: 80%;
   position: fixed;
@@ -48,7 +45,7 @@ const handleSend = async (content: string) => {
   transform: translateX(-50%);
 }
 .messages {
-  flex: 1;
+  height: 500px;
   overflow-y: auto;
   scroll-behavior: smooth;
 }

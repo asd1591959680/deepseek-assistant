@@ -5,7 +5,7 @@
     <div>
       基于国产大语言模型的智能对话助手，支持流式输出、Markdown渲染、代码高亮等功能
     </div>
-    <div class="need-api">
+    <div v-if="false" class="need-api">
       <p>需要配置 API Key</p>
       <p class="text2">请在设置中输入你的 DeepSeek API Key 以开始对话</p>
       <el-button type="primary" @click="isShow = true">打开设置</el-button>

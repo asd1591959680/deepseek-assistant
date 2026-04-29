@@ -1,31 +1,42 @@
 <script setup lang="ts">
 import { reactive } from "vue";
-
+import { useChat } from "../hooks/useChat";
+const { updateSettings } = useChat();
 const isShow = defineModel("isShow");
 const ruleForm = reactive({
-  key: "",
-  url: "",
-  modelNm: "",
-  tips: "",
+  key: "sk-d774cde3615c473f800e6ffb3f562144",
+  // url: "",
+  modelNm: "deepseek-v4-flash",
   temperature: 0.7,
-  maxLength: 3150,
+  // maxLength: 3150,
+  systemPrompt: "你是一个有用的AI助手。",
 });
 const rules = reactive({
   key: [{ required: true, message: "请输入", trigger: "blur" }],
 });
 const modelOptions = reactive([
   {
-    id: "deepseek-chat",
-    name: "DeepSeek Chat",
+    id: "deepseek-v4-flash",
+    name: "DeepSeek-V4-Flash",
     description: "通用对话模型，适合日常问答",
   },
   {
-    id: "deepseek-reasoner",
-    name: "DeepSeek Reasoner",
+    id: "deepseek-v4-pro",
+    name: "DeepSeek-V4-Pro",
     description: "深度推理模型，适合复杂逻辑推理",
   },
 ]);
 const changeFun = () => {
+  isShow.value = false;
+};
+const saveSettings = () => {
+  localStorage.setItem("dp-assist-settings", JSON.stringify(ruleForm));
+  updateSettings({
+    apiKey: ruleForm.key,
+    model: ruleForm.modelNm,
+    temperature: ruleForm.temperature,
+    systemPrompt: ruleForm.systemPrompt,
+  });
   isShow.value = false;
 };
 const clickItem = (id: string) => {
@@ -51,11 +62,11 @@ const clickItem = (id: string) => {
           label-position="left"
         >
           <el-form-item label="API Key" prop="key" label-position="top">
-            <el-input v-model="ruleForm.key" />
+            <el-input type="password" v-model="ruleForm.key" />
           </el-form-item>
-          <el-form-item label="API地址" prop="url" label-position="top">
+          <!-- <el-form-item label="API地址" prop="url" label-position="top">
             <el-input v-model="ruleForm.url" />
-          </el-form-item>
+          </el-form-item> -->
           <el-form-item label="模型选择" prop="modelNm" label-position="top">
             <div
               v-for="item in modelOptions"
@@ -79,7 +90,7 @@ const clickItem = (id: string) => {
               :step="0.1"
             />
           </el-form-item>
-          <el-form-item
+          <!-- <el-form-item
             label="最大输出长度"
             prop="maxLength"
             label-position="top"
@@ -90,13 +101,20 @@ const clickItem = (id: string) => {
               :max="8192"
               :step="1"
             />
+          </el-form-item> -->
+          <el-form-item
+            label="系统提示词"
+            prop="systemPrompt"
+            label-position="top"
+          >
+            <el-input v-model="ruleForm.systemPrompt" />
           </el-form-item>
         </el-form>
       </div>
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="changeFun">取消</el-button>
-          <el-button type="primary" @click="changeFun"> 保存设置 </el-button>
+          <el-button type="primary" @click="saveSettings"> 保存设置 </el-button>
         </div>
       </template>
     </el-dialog>

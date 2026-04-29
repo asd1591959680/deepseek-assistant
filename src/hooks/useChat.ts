@@ -17,7 +17,18 @@ function loadConversations(): Conversation[] {
 function loadSettings(): ChatSettings {
   try {
     const data = localStorage.getItem(SETTINGS_KEY);
-    if (data) return JSON.parse(data);
+    if (data) {
+      const parsed = JSON.parse(data);
+
+      const obj = {
+        apiKey: parsed.key || "",
+        model: parsed.modelNm || "deepseek-v4-flash",
+        systemPrompt: parsed.systemPrompt || "",
+        temperature:
+          typeof parsed.temperature === "number" ? parsed.temperature : 0.7,
+      };
+      return obj;
+    }
   } catch {
     /* 忽略 */
   }
@@ -72,6 +83,8 @@ export function useChat() {
   // 发送消息
   async function sendMessage(content: string) {
     if (!content.trim()) return;
+    const currentSettings = settings.value;
+    console.log("sendMessage 读取到的 settings:", currentSettings);
     // 确保有当前会话
     if (!currentConversation.value) createConversation();
     const conv = currentConversation.value!;
@@ -111,6 +124,8 @@ export function useChat() {
           content: m.content,
         })),
     ];
+    console.log(settings.value, currentSettings);
+
     await streamChat(
       chatMessages,
       settings.value.apiKey,

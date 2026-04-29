@@ -1,3 +1,9 @@
+<script setup lang="ts">
+const emit = defineEmits(["change"]);
+const open = () => {
+  emit("change", true);
+};
+</script>
 <template>
   <div class="page-container">
     <div class="left-wrap">
@@ -7,10 +13,16 @@
         <p class="text">未配置API Key</p>
       </div>
     </div>
-    <img src="../assets/setting.svg" alt="图标" width="24" height="24" />
+    <img
+      src="../assets/setting.svg"
+      alt="图标"
+      width="24"
+      height="24"
+      @click="open"
+    />
   </div>
 </template>
-<script setup lang="ts"></script>
+
 <style lang="scss" scoped>
 .page-container {
   margin-top: 24px;

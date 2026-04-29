@@ -4,16 +4,16 @@ import Main from "./components/Main.vue";
 import ChatInput from "./components/ChatInput.vue";
 import { useChat } from "./hooks/useChat";
 import Message from "./components/Message.vue";
+import Setting from "./components/Setting.vue";
 import { nextTick, ref, watch } from "vue";
 const { sendMessage, currentMessages } = useChat();
 const messagesRef = ref<HTMLElement>();
-
+const isShow = ref(false);
 // 自动滚动到底部
 watch(
   currentMessages,
   async () => {
     await nextTick();
-    console.log(messagesRef.value?.scrollHeight);
     if (messagesRef.value) {
       messagesRef.value.scrollTop = messagesRef.value.scrollHeight;
     }
@@ -25,7 +25,7 @@ const handleSend = async (content: string) => {
 };
 </script>
 <template>
-  <Topbar class="top-wrap"></Topbar>
+  <Topbar class="top-wrap" @change="isShow = $event"></Topbar>
   <Main class="main-wrap" v-if="currentMessages.length === 0"></Main>
   <div v-else class="messages" ref="messagesRef">
     <Message
@@ -35,6 +35,7 @@ const handleSend = async (content: string) => {
     />
   </div>
   <ChatInput class="input-wrap" @send="handleSend"></ChatInput>
+  <Setting v-model:isShow="isShow"></Setting>
 </template>
 <style lang="scss" scoped>
 .input-wrap {

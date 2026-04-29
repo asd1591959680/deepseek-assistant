@@ -27,7 +27,7 @@ const handleSend = async (content: string) => {
 <template>
   <Topbar class="top-wrap"></Topbar>
   <Main class="main-wrap" v-if="currentMessages.length === 0"></Main>
-  <div class="messages" ref="messagesRef">
+  <div v-else class="messages" ref="messagesRef">
     <Message
       v-for="(msg, index) in currentMessages"
       :key="index"
@@ -48,5 +48,28 @@ const handleSend = async (content: string) => {
   height: 500px;
   overflow-y: auto;
   scroll-behavior: smooth;
+}
+/* 深色主题滚动条 */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #2c2c2c;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #666;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+::-webkit-scrollbar-corner {
+  background: #2c2c2c;
 }
 </style>

@@ -23,6 +23,7 @@ const isShow = ref(false);
 .page-container {
   margin-top: 24px;
   padding: 0px 32px;
+  text-align: center;
 }
 .need-api {
   width: 500px;

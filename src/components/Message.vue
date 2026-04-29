@@ -100,7 +100,7 @@ function formatTime(ts: number): string {
   </div>
 </template>
 
-<style scoped>
+<style lang="scss" scoped>
 .message {
   display: flex;
   gap: 14px;
@@ -175,5 +175,34 @@ function formatTime(ts: number): string {
 }
 .dots span:nth-child(3) {
   animation-delay: 0.4s;
+}
+:deep(.copy-btn) {
+  background-color: #2c2c2c;
+  border: none;
+  color: #fff;
+}
+.hljs {
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #2c2c2c;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #666;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #999;
+  }
+
+  ::-webkit-scrollbar-corner {
+    background: #2c2c2c;
+  }
 }
 </style>

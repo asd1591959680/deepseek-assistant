@@ -16,7 +16,8 @@ const sendMsg = () => {
       placeholder="请输入"
       class="input_txt"
     />
-    <el-icon color="#409efc" :size="40" @click="sendMsg"><Promotion /></el-icon>
+
+    <el-icon color="#fff" :size="32" @click="sendMsg"><Position /></el-icon>
   </div>
 </template>
 <style lang="scss" scoped>

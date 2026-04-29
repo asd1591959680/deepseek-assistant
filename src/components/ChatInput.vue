@@ -1,10 +1,32 @@
-<template>
-    <div class='page-container'>input</div>
-</template>
-<script setup lang='ts'>
+<script setup lang="ts">
+import { ref } from "vue";
+const emit = defineEmits(["send"]);
+const textarea1 = ref("你好");
+const sendMsg = () => {
+  emit("send", textarea1.value);
+  //   textarea1.value = "";
+};
 </script>
-<style lang='scss' scoped>
+<template>
+  <div class="page-container">
+    <el-input
+      v-model="textarea1"
+      :autosize="{ minRows: 1, maxRows: 4 }"
+      type="textarea"
+      placeholder="请输入"
+      class="input_txt"
+    />
+    <el-icon color="#409efc" :size="40" @click="sendMsg"><Promotion /></el-icon>
+  </div>
+</template>
+<style lang="scss" scoped>
 .page-container {
-margin-top: 24px;
-padding: 0px 32px;}
+  display: flex;
+  margin-top: 24px;
+  padding: 0px 32px;
+  align-items: center;
+}
+.input_txt {
+  width: 100%;
+}
 </style>

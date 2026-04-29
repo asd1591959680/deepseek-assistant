@@ -11,6 +11,7 @@
       <el-button type="primary" @click="isShow = true">打开设置</el-button>
     </div>
   </div>
+
   <Setting v-model:isShow="isShow"></Setting>
 </template>
 <script setup lang="ts">

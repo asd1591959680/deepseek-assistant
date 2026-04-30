@@ -1,24 +1,33 @@
 <script setup lang="ts">
-const emit = defineEmits(["change"]);
-const open = () => {
-  emit("change", true);
+const emit = defineEmits(["right", "left"]);
+const openRight = () => {
+  emit("right", true);
+};
+const openLeft = () => {
+  emit("left", true);
 };
 </script>
 <template>
   <div class="page-container">
     <div class="left-wrap">
-      <img src="../assets/list.svg" alt="图标" width="24" height="24" />
+      <img
+        src="../assets/list.svg"
+        alt="图标"
+        width="48"
+        height="48"
+        @click="openLeft"
+      />
       <div class="status">
         <p>deepseek 智能助手</p>
-        <p class="text">未配置API Key</p>
+        <p v-if="false" class="text">未配置API Key</p>
       </div>
     </div>
     <img
       src="../assets/setting.svg"
       alt="图标"
-      width="24"
-      height="24"
-      @click="open"
+      width="48"
+      height="48"
+      @click="openRight"
     />
   </div>
 </template>
@@ -26,7 +35,7 @@ const open = () => {
 <style lang="scss" scoped>
 .page-container {
   margin-top: 24px;
-  padding: 0px 32px;
+  padding: 0px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;

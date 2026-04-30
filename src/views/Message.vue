@@ -3,7 +3,7 @@ import { computed, ref, watch, nextTick } from "vue";
 import { renderMarkdown } from "../utils/markdown";
 import hljs from "highlight.js";
 import type { Message } from "../types";
-
+import Dots from "../components/Dots.vue";
 const props = defineProps<{ message: Message }>();
 
 const contentRef = ref<HTMLElement>();
@@ -94,7 +94,9 @@ function formatTime(ts: number): string {
       >
         <template v-if="isUser">{{ renderedContent }}</template>
         <div v-else-if="renderedContent" v-html="renderedContent"></div>
-        <div v-else class="dots"><span></span><span></span><span></span></div>
+        <div v-else>
+          <Dots />
+        </div>
       </div>
     </div>
   </div>
@@ -158,24 +160,6 @@ function formatTime(ts: number): string {
   word-break: break-word;
 }
 
-.dots {
-  display: flex;
-  gap: 5px;
-  padding: 6px 0;
-}
-.dots span {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: var(--text-muted);
-  animation: pulse 1.4s infinite ease-in-out;
-}
-.dots span:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.dots span:nth-child(3) {
-  animation-delay: 0.4s;
-}
 :deep(.copy-btn) {
   background-color: #2c2c2c;
   border: none;

@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { ref } from "vue";
 const emit = defineEmits(["send"]);
-const textarea1 = ref("你好");
+const textarea1 = ref("");
 const sendMsg = () => {
   emit("send", textarea1.value);
-  //   textarea1.value = "";
+  textarea1.value = "";
 };
 </script>
 <template>

@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { reactive } from "vue";
-import { useChat } from "../hooks/useChat";
-const { updateSettings } = useChat();
+const emit = defineEmits(["updateSetting"]);
 const isShow = defineModel("isShow");
 const ruleForm = reactive({
   key: "sk-d774cde3615c473f800e6ffb3f562144",
@@ -30,13 +29,7 @@ const changeFun = () => {
   isShow.value = false;
 };
 const saveSettings = () => {
-  localStorage.setItem("dp-assist-settings", JSON.stringify(ruleForm));
-  updateSettings({
-    apiKey: ruleForm.key,
-    model: ruleForm.modelNm,
-    temperature: ruleForm.temperature,
-    systemPrompt: ruleForm.systemPrompt,
-  });
+  emit("updateSetting", ruleForm);
   isShow.value = false;
 };
 const clickItem = (id: string) => {
@@ -48,7 +41,7 @@ const clickItem = (id: string) => {
     <el-dialog
       v-model="isShow"
       title="设置"
-      width="500"
+      width="80%"
       center
       class="setting-dialog"
     >
@@ -62,7 +55,7 @@ const clickItem = (id: string) => {
           label-position="left"
         >
           <el-form-item label="API Key" prop="key" label-position="top">
-            <el-input type="password" v-model="ruleForm.key" />
+            <el-input type="password" v-model="ruleForm.key" clearable />
           </el-form-item>
           <!-- <el-form-item label="API地址" prop="url" label-position="top">
             <el-input v-model="ruleForm.url" />
@@ -107,7 +100,7 @@ const clickItem = (id: string) => {
             prop="systemPrompt"
             label-position="top"
           >
-            <el-input v-model="ruleForm.systemPrompt" />
+            <el-input v-model="ruleForm.systemPrompt" clearable />
           </el-form-item>
         </el-form>
       </div>

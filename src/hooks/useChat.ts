@@ -1,6 +1,6 @@
 import { streamChat } from "../utils/deepseek";
 import type { Message, Conversation, ChatSettings } from "../types";
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 const SETTINGS_KEY = "dp-assist-settings";
 const STORAGE_KEY = "dp-assist-conversations";
 function generateId(): string {
@@ -33,7 +33,7 @@ function loadSettings(): ChatSettings {
     /* 忽略 */
   }
   return {
-    apiKey: "sk-d774cde3615c473f800e6ffb3f562144",
+    apiKey: "",
     model: "deepseek-v4-flash",
     systemPrompt: "你是一个有用的AI助手。",
     temperature: 0.7,
@@ -48,13 +48,30 @@ export function useChat() {
   const abortController = ref<AbortController | null>(null);
   //读取本地数据设置
   const settings = ref<ChatSettings>(loadSettings());
-  //寻找当前对话
+  //监听对话列表变化，动态更新当前对话
   const currentConversation = computed(() =>
     conversations.value.find((c) => c.id === currentId.value),
   );
   //赋值当前对话的消息
   const currentMessages = computed(
     () => currentConversation.value?.messages || [],
+  );
+
+  // 持久化对话列表到本地存储
+  watch(
+    conversations,
+    (val) => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
+    },
+    { deep: true },
+  );
+  // 持久化设置到本地存储
+  watch(
+    settings,
+    (val) => {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(val));
+    },
+    { deep: true },
   );
   // 新建对话
   function createConversation() {
@@ -65,6 +82,7 @@ export function useChat() {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     };
+    // 将新对话添加到列表顶部
     conversations.value.unshift(conv);
     currentId.value = conv.id;
     return conv;
@@ -83,8 +101,6 @@ export function useChat() {
   // 发送消息
   async function sendMessage(content: string) {
     if (!content.trim()) return;
-    const currentSettings = settings.value;
-    console.log("sendMessage 读取到的 settings:", currentSettings);
     // 确保有当前会话
     if (!currentConversation.value) createConversation();
     const conv = currentConversation.value!;
@@ -98,7 +114,7 @@ export function useChat() {
     // 用第一条用户消息作为标题
     if (conv.messages.filter((m) => m.role === "user").length === 1) {
       conv.title =
-        content.trim().slice(0, 30) + (content.trim().length > 30 ? "..." : "");
+        content.trim().slice(0, 12) + (content.trim().length > 12 ? "..." : "");
     }
     // 助手消息占位
     const assistantMsg: Message = {
@@ -124,8 +140,6 @@ export function useChat() {
           content: m.content,
         })),
     ];
-    console.log(settings.value, currentSettings);
-
     await streamChat(
       chatMessages,
       settings.value.apiKey,

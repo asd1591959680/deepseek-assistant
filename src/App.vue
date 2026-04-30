@@ -1,14 +1,37 @@
 <script setup lang="ts">
-import Topbar from "./components/Topbar.vue";
-import Main from "./components/Main.vue";
-import ChatInput from "./components/ChatInput.vue";
+import Topbar from "./views/Topbar.vue";
+import Main from "./views/Main.vue";
+import ChatInput from "./views/ChatInput.vue";
 import { useChat } from "./hooks/useChat";
-import Message from "./components/Message.vue";
-import Setting from "./components/Setting.vue";
+import Message from "./views/Message.vue";
+import Setting from "./views/Setting.vue";
 import { nextTick, ref, watch } from "vue";
-const { sendMessage, currentMessages } = useChat();
+import Sidebar from "./views/Sidebar.vue";
+const {
+  sendMessage,
+  currentMessages,
+  updateSettings,
+  createConversation,
+  conversations,
+  switchConversation,
+} = useChat();
 const messagesRef = ref<HTMLElement>();
 const isShow = ref(false);
+const drawer = ref(false);
+const handleSend = async (content: string) => {
+  await sendMessage(content);
+};
+const settingFun = (setting: any) => {
+  updateSettings({
+    apiKey: setting.key,
+    model: setting.modelNm,
+    systemPrompt: setting.systemPrompt,
+    temperature: setting.temperature,
+  });
+};
+const handleNewMsg = () => {
+  createConversation();
+};
 // 自动滚动到底部
 watch(
   currentMessages,
@@ -20,12 +43,13 @@ watch(
   },
   { deep: true },
 );
-const handleSend = async (content: string) => {
-  await sendMessage(content);
-};
 </script>
 <template>
-  <Topbar class="top-wrap" @change="isShow = $event"></Topbar>
+  <Topbar
+    class="top-wrap"
+    @right="isShow = $event"
+    @left="drawer = $event"
+  ></Topbar>
   <Main class="main-wrap" v-if="currentMessages.length === 0"></Main>
   <div v-else class="messages" ref="messagesRef">
     <Message
@@ -35,7 +59,13 @@ const handleSend = async (content: string) => {
     />
   </div>
   <ChatInput class="input-wrap" @send="handleSend"></ChatInput>
-  <Setting v-model:isShow="isShow"></Setting>
+  <Setting v-model:isShow="isShow" @update-setting="settingFun"></Setting>
+  <Sidebar
+    v-model:drawer="drawer"
+    @new-msg="handleNewMsg"
+    @select-msg="switchConversation"
+    :list="conversations"
+  ></Sidebar>
 </template>
 <style lang="scss" scoped>
 .input-wrap {

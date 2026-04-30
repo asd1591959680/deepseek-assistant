@@ -1,10 +1,21 @@
 <script setup lang="ts">
 import { ref } from "vue";
-const emit = defineEmits(["send"]);
+const emit = defineEmits(["send", "stop"]);
 const textarea1 = ref("");
+const props = defineProps({
+  isLoading: {
+    type: Boolean,
+    default: false,
+  },
+});
 const sendMsg = () => {
-  emit("send", textarea1.value);
-  textarea1.value = "";
+  if (textarea1.value) {
+    emit("send", textarea1.value);
+    textarea1.value = "";
+  }
+};
+const stopMsg = () => {
+  emit("stop");
 };
 </script>
 <template>
@@ -17,7 +28,12 @@ const sendMsg = () => {
       class="input_txt"
     />
 
-    <el-icon color="#fff" :size="32" @click="sendMsg"><Position /></el-icon>
+    <el-icon v-if="!isLoading" color="#fff" :size="32" @click="sendMsg">
+      <Position />
+    </el-icon>
+    <el-icon v-else color="#fff" :size="32" @click="stopMsg">
+      <VideoPause />
+    </el-icon>
   </div>
 </template>
 <style lang="scss" scoped>

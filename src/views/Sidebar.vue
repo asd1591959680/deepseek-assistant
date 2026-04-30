@@ -7,8 +7,9 @@ const prop = defineProps({
     default: [],
   },
 });
-const emit = defineEmits(["newMsg", "selectMsg"]);
+const emit = defineEmits(["newMsg", "selectMsg", "deleteMsg"]);
 const itemId = ref("");
+const moreId = ref("");
 const visible = ref(false);
 const drawer = defineModel("drawer", {
   type: Boolean,
@@ -23,11 +24,19 @@ const chooseMsg = (id: string) => {
   itemId.value = id;
   emit("selectMsg", id);
   drawer.value = false;
-  visible.value = false;
 };
 const newMsg = () => {
   emit("newMsg");
   drawer.value = false;
+};
+const deleteMsg = (id: string) => {
+  emit("deleteMsg", id);
+  drawer.value = false;
+  visible.value = false;
+};
+const chooseMore = (id: string) => {
+  moreId.value = id;
+  visible.value = !visible.value;
 };
 </script>
 <template>
@@ -51,6 +60,18 @@ const newMsg = () => {
           @click="chooseMsg(item.id)"
         >
           <p>{{ item.title }}</p>
+          <div class="more-wrap">
+            <el-icon @click.stop="chooseMore(item.id)"><More /></el-icon>
+            <div v-if="moreId === item.id && visible" class="del-wrap">
+              <el-button
+                type="danger"
+                size="small"
+                @click.stop="deleteMsg(item.id)"
+              >
+                删除
+              </el-button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -80,6 +101,30 @@ const newMsg = () => {
       background-color: #2d2d2e;
       border-radius: 5px;
     }
+    &:hover {
+      color: #f0f0f0;
+      border: 1px solid #2d2d2e;
+      background-color: #2d2d2e;
+      border-radius: 5px;
+    }
+  }
+  .more-wrap {
+    position: relative;
+    .el-icon {
+      cursor: pointer;
+    }
+  }
+  .del-wrap {
+    width: 50px;
+    position: absolute;
+    top: 33px;
+    left: -50px;
+    padding: 5px 10px;
+    color: #fff;
+    border-radius: 5px;
+    font-size: 12px;
+    background-color: #2d2d2e;
+    z-index: 1;
   }
 }
 </style>

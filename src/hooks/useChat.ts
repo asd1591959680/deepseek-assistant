@@ -1,6 +1,7 @@
 import { streamChat } from "../utils/deepseek";
 import type { Message, Conversation, ChatSettings } from "../types";
 import { computed, ref, watch } from "vue";
+import { ElMessage } from "element-plus";
 const SETTINGS_KEY = "dp-assist-settings";
 const STORAGE_KEY = "dp-assist-conversations";
 function generateId(): string {
@@ -18,16 +19,7 @@ function loadSettings(): ChatSettings {
   try {
     const data = localStorage.getItem(SETTINGS_KEY);
     if (data) {
-      const parsed = JSON.parse(data);
-
-      const obj = {
-        apiKey: parsed.key || "",
-        model: parsed.modelNm || "deepseek-v4-flash",
-        systemPrompt: parsed.systemPrompt || "",
-        temperature:
-          typeof parsed.temperature === "number" ? parsed.temperature : 0.7,
-      };
-      return obj;
+      return JSON.parse(data);
     }
   } catch {
     /* 忽略 */
@@ -163,22 +155,30 @@ export function useChat() {
           isLoading.value = false;
           abortController.value = null;
           errorMsg.value = error.message;
+          ElMessage.error(errorMsg.value);
         },
       },
       settings.value.model,
       settings.value.temperature,
+      // 通过 signal 可以取消请求,没有 signal 就无法取消请求
+      abortController.value.signal,
     );
   }
   // 中断对话生成
   function stopGeneration() {
+    // 如果存在异步请求，则中断它
+
     if (abortController.value) {
       abortController.value.abort();
+      //.abort() 只能调用一次，重复调用会报错，所以调用后将其置空
       abortController.value = null;
     }
     isLoading.value = false;
     const conv = currentConversation.value;
     if (conv) {
+      //找到当前对话中正在流式输出的那条消息
       const streaming = conv.messages.find((m) => m.isStreaming);
+      //将其标记为 false，UI 会停止显示打字机效果/光标闪烁
       if (streaming) streaming.isStreaming = false;
     }
   }

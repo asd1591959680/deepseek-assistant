@@ -1,20 +1,30 @@
 <template>
   <div class="page-container">
-    <img src="../assets/ai.svg" alt="" />
-    <div>欢迎使用 DeepSeek Chat</div>
-    <div>
-      基于国产大语言模型的智能对话助手，支持流式输出、Markdown渲染、代码高亮等功能
+    <div v-if="props.apiKey">
+      <img src="../assets/ai.svg" alt="" />
+      <div>欢迎使用 DeepSeek assist</div>
+      <div>
+        基于国产大语言模型的智能对话助手，支持流式输出、Markdown渲染、代码高亮等功能
+      </div>
     </div>
-    <div v-if="false" class="need-api">
+    <div v-else class="need-api">
       <p>需要配置 API Key</p>
       <p class="text2">请在设置中输入你的 DeepSeek API Key 以开始对话</p>
-      <el-button type="primary" @click="isShow = true">打开设置</el-button>
+      <el-button type="primary" @click="openSetting">打开设置</el-button>
     </div>
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from "vue";
-const isShow = ref(false);
+const props = defineProps({
+  apiKey: {
+    type: String,
+    default: "",
+  },
+});
+const emit = defineEmits(["open"]);
+const openSetting = () => {
+  emit("open");
+};
 </script>
 <style lang="scss" scoped>
 .page-container {

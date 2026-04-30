@@ -14,6 +14,10 @@ const {
   createConversation,
   conversations,
   switchConversation,
+  deleteConversation,
+  isLoading,
+  stopGeneration,
+  settings,
 } = useChat();
 const messagesRef = ref<HTMLElement>();
 const isShow = ref(false);
@@ -50,7 +54,12 @@ watch(
     @right="isShow = $event"
     @left="drawer = $event"
   ></Topbar>
-  <Main class="main-wrap" v-if="currentMessages.length === 0"></Main>
+  <Main
+    class="main-wrap"
+    v-if="currentMessages.length === 0"
+    @open="isShow = true"
+    :api-key="settings.apiKey"
+  ></Main>
   <div v-else class="messages" ref="messagesRef">
     <Message
       v-for="(msg, index) in currentMessages"
@@ -58,12 +67,18 @@ watch(
       :message="msg"
     />
   </div>
-  <ChatInput class="input-wrap" @send="handleSend"></ChatInput>
+  <ChatInput
+    class="input-wrap"
+    @send="handleSend"
+    @stop="stopGeneration"
+    :isLoading="isLoading"
+  ></ChatInput>
   <Setting v-model:isShow="isShow" @update-setting="settingFun"></Setting>
   <Sidebar
     v-model:drawer="drawer"
     @new-msg="handleNewMsg"
     @select-msg="switchConversation"
+    @delete-msg="deleteConversation"
     :list="conversations"
   ></Sidebar>
 </template>

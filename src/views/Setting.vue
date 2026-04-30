@@ -54,7 +54,11 @@ const clickItem = (id: string) => {
           label-width="auto"
           label-position="left"
         >
-          <el-form-item label="API Key" prop="key" label-position="top">
+          <el-form-item
+            label="API Key(默认API)"
+            prop="key"
+            label-position="top"
+          >
             <el-input type="password" v-model="ruleForm.key" clearable />
           </el-form-item>
           <!-- <el-form-item label="API地址" prop="url" label-position="top">

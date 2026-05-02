@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import type { Conversation } from "../types";
-import { useAIStore } from "@/store/index";
+import { useAIStore } from "@/store";
 import {
   ElMessage,
   ElMessageBox,
@@ -74,6 +74,7 @@ const handleExceed: UploadProps["onExceed"] = (files, uploadFiles) => {
 };
 
 const beforeRemove: UploadProps["beforeRemove"] = (uploadFile, uploadFiles) => {
+  console.log(uploadFiles);
   return ElMessageBox.confirm(
     `Cancel the transfer of ${uploadFile.name} ?`,
   ).then(

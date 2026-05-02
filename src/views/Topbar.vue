@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useAIStore } from "@/store/index";
+import { useAIStore } from "@/store";
 const emit = defineEmits(["right", "left"]);
 const openRight = () => {
   emit("right", true);

@@ -33,7 +33,7 @@ const openSetting = () => {
   text-align: center;
 }
 .need-api {
-  width: 500px;
+  width: 18rem;
   padding: 20px;
   margin: 50px 0;
   position: relative;

@@ -1,10 +1,17 @@
 <script setup lang="ts">
+import { ref } from "vue";
+import { useAIStore } from "@/store/index";
 const emit = defineEmits(["right", "left"]);
 const openRight = () => {
   emit("right", true);
 };
 const openLeft = () => {
   emit("left", true);
+};
+const ai = useAIStore();
+const radio = ref("1");
+const changeEvent = () => {
+  ai.models = radio.value;
 };
 </script>
 <template>
@@ -21,6 +28,17 @@ const openLeft = () => {
         <p>deepseek 智能助手</p>
         <p v-if="false" class="text">未配置API Key</p>
       </div>
+    </div>
+    <div>
+      <el-radio-group
+        v-model="radio"
+        size="large"
+        fill="#409eff"
+        @change="changeEvent"
+      >
+        <el-radio-button label="普通对话" value="1" />
+        <el-radio-button label="知识库问答" value="2" />
+      </el-radio-group>
     </div>
     <img
       src="../assets/setting.svg"

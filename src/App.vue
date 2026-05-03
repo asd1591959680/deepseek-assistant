@@ -7,6 +7,8 @@ import Message from "./views/Message.vue";
 import Setting from "./views/Setting.vue";
 import { nextTick, ref, watch } from "vue";
 import Sidebar from "./views/Sidebar.vue";
+import SidebarRAG from "@/views/rag/Sidebar.vue";
+import { useRagStore } from "@/store";
 const {
   sendMessage,
   currentMessages,
@@ -19,6 +21,7 @@ const {
   stopGeneration,
   settings,
 } = useChat();
+const rag = useRagStore();
 const messagesRef = ref<HTMLElement>();
 const isShow = ref(false);
 const drawer = ref(false);
@@ -74,13 +77,24 @@ watch(
     :isLoading="isLoading"
   ></ChatInput>
   <Setting v-model:isShow="isShow" @update-setting="settingFun"></Setting>
-  <Sidebar
-    v-model:drawer="drawer"
-    @new-msg="handleNewMsg"
-    @select-msg="switchConversation"
-    @delete-msg="deleteConversation"
-    :list="conversations"
-  ></Sidebar>
+  <div>
+    <Sidebar
+      v-if="rag.models === '1'"
+      v-model:drawer="drawer"
+      @new-msg="handleNewMsg"
+      @select-msg="switchConversation"
+      @delete-msg="deleteConversation"
+      :list="conversations"
+    ></Sidebar>
+    <SidebarRAG
+      v-else
+      v-model:drawer="drawer"
+      @new-msg="handleNewMsg"
+      @select-msg="switchConversation"
+      @delete-msg="deleteConversation"
+      :list="conversations"
+    />
+  </div>
 </template>
 <style lang="scss" scoped>
 .input-wrap {

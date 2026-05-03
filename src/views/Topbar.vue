@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { useAIStore } from "@/store";
+import { useRagStore } from "@/store";
 const emit = defineEmits(["right", "left"]);
 const openRight = () => {
   emit("right", true);
@@ -8,10 +8,10 @@ const openRight = () => {
 const openLeft = () => {
   emit("left", true);
 };
-const ai = useAIStore();
+const rag = useRagStore();
 const radio = ref("1");
 const changeEvent = () => {
-  ai.models = radio.value;
+  rag.models = radio.value;
 };
 </script>
 <template>

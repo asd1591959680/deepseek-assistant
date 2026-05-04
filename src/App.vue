@@ -7,8 +7,9 @@ import Message from "./views/Message.vue";
 import Setting from "./views/Setting.vue";
 import { nextTick, ref, watch } from "vue";
 import Sidebar from "./views/Sidebar.vue";
-import SidebarRAG from "@/views/rag/Sidebar.vue";
+import ModelStatus from "@/components/ModelStatus.vue";
 import { useRagStore } from "@/store";
+
 const {
   sendMessage,
   currentMessages,
@@ -26,7 +27,14 @@ const messagesRef = ref<HTMLElement>();
 const isShow = ref(false);
 const drawer = ref(false);
 const handleSend = async (content: string) => {
-  await sendMessage(content);
+  // if (rag.isSuccess) {
+  console.log(rag.totalChunks, rag.documents.length);
+
+  const retrieved = await rag.retrieve(content);
+  await sendMessage(content, retrieved, rag.totalChunks);
+  // } else {
+  //   await sendMessage(content);
+  // }
 };
 const settingFun = (setting: any) => {
   updateSettings({
@@ -52,11 +60,9 @@ watch(
 );
 </script>
 <template>
-  <Topbar
-    class="top-wrap"
-    @right="isShow = $event"
-    @left="drawer = $event"
-  ></Topbar>
+  <Topbar class="top-wrap" @right="isShow = $event" @left="drawer = $event"
+    ><ModelStatus
+  /></Topbar>
   <Main
     class="main-wrap"
     v-if="currentMessages.length === 0"
@@ -77,24 +83,13 @@ watch(
     :isLoading="isLoading"
   ></ChatInput>
   <Setting v-model:isShow="isShow" @update-setting="settingFun"></Setting>
-  <div>
-    <Sidebar
-      v-if="rag.models === '1'"
-      v-model:drawer="drawer"
-      @new-msg="handleNewMsg"
-      @select-msg="switchConversation"
-      @delete-msg="deleteConversation"
-      :list="conversations"
-    ></Sidebar>
-    <SidebarRAG
-      v-else
-      v-model:drawer="drawer"
-      @new-msg="handleNewMsg"
-      @select-msg="switchConversation"
-      @delete-msg="deleteConversation"
-      :list="conversations"
-    />
-  </div>
+  <Sidebar
+    v-model:drawer="drawer"
+    @new-msg="handleNewMsg"
+    @select-msg="switchConversation"
+    @delete-msg="deleteConversation"
+    :list="conversations"
+  ></Sidebar>
 </template>
 <style lang="scss" scoped>
 .input-wrap {
@@ -105,7 +100,7 @@ watch(
   transform: translateX(-50%);
 }
 .messages {
-  height: 500px;
+  height: 75vh;
   overflow-y: auto;
   scroll-behavior: smooth;
 }

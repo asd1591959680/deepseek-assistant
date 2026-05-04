@@ -1,9 +1,20 @@
 import { streamChat } from "../utils/deepseek";
-import type { Message, Conversation, ChatSettings } from "../types";
+import type {
+  Message,
+  Conversation,
+  ChatSettings,
+  RetrievedChunk,
+} from "../types";
 import { computed, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
 const SETTINGS_KEY = "dp-assist-settings";
 const STORAGE_KEY = "dp-assist-conversations";
+const RAG_SYSTEM_PROMPT = `你是一个专业的知识库助手。请基于以下检索到的上下文内容来回答用户的问题。
+如果上下文中没有相关信息，请诚实地告知用户，不要编造答案。
+回答时请引用具体的文档内容，并保持简洁专业。
+
+上下文内容：
+{context}`;
 function generateId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2);
 }
@@ -91,7 +102,11 @@ export function useChat() {
     currentId.value = id;
   }
   // 发送消息
-  async function sendMessage(content: string) {
+  async function sendMessage(
+    content: string,
+    retrieved: RetrievedChunk[],
+    totalChunks: number,
+  ) {
     if (!content.trim()) return;
     // 确保有当前会话
     if (!currentConversation.value) createConversation();
@@ -102,6 +117,7 @@ export function useChat() {
       content: content.trim(),
       timestamp: Date.now(),
     };
+    // 添加用户消息
     conv.messages.push(userMsg);
     // 用第一条用户消息作为标题
     if (conv.messages.filter((m) => m.role === "user").length === 1) {
@@ -115,15 +131,31 @@ export function useChat() {
       content: "",
       timestamp: Date.now(),
       isStreaming: true,
+      sources: retrieved,
     };
     conv.messages.push(assistantMsg);
     conv.updatedAt = Date.now();
     isLoading.value = true;
     abortController.value = new AbortController();
+    const systemContent = ref("");
+    if (totalChunks > 0) {
+      systemContent.value = RAG_SYSTEM_PROMPT;
+      const context =
+        retrieved.length > 0
+          ? retrieved
+              .map((c, i) => `[${i + 1}] (来源: ${c.docName})\n${c.content}`)
+              .join("\n\n---\n\n")
+          : "（知识库中没有找到相关内容，将基于模型自身知识回答）";
+
+      // 4. 替换系统提示词中的{context}占位符
+      systemContent.value = systemContent.value.replace("{context}", context);
+    } else {
+      systemContent.value = settings.value.systemPrompt;
+    }
     // 构建发送给 API 的消息列表
     const chatMessages = [
-      ...(settings.value.systemPrompt
-        ? [{ role: "system" as const, content: settings.value.systemPrompt }]
+      ...(systemContent.value
+        ? [{ role: "system" as const, content: systemContent.value }]
         : []),
       ...conv.messages
         .filter((m) => m.role !== "system" && m.id !== assistantMsg.id)

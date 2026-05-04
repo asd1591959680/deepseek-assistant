@@ -4,7 +4,10 @@
       <img src="../assets/ai.svg" alt="" />
       <div>欢迎使用 DeepSeek assist</div>
       <div>
-        基于国产大语言模型的智能对话助手，支持流式输出、Markdown渲染、代码高亮等功能
+        <p>
+          基于国产大语言模型的智能对话助手，支持流式输出、Markdown渲染、代码高亮等功能
+        </p>
+        <p>支持文件上传、知识库问答等功能</p>
       </div>
     </div>
     <div v-else class="need-api">

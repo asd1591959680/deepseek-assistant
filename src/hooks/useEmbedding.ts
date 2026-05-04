@@ -24,7 +24,7 @@ export function useEmbedding() {
       progress: 0,
       message: "正在加载嵌入模型...",
     };
-    // debugger;
+
     try {
       const { pipeline: createPipeline, env } =
         await import("@xenova/transformers");

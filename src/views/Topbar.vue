@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { useRagStore } from "@/store";
 const emit = defineEmits(["right", "left"]);
 const openRight = () => {
@@ -7,11 +6,6 @@ const openRight = () => {
 };
 const openLeft = () => {
   emit("left", true);
-};
-const rag = useRagStore();
-const radio = ref("1");
-const changeEvent = () => {
-  rag.models = radio.value;
 };
 </script>
 <template>
@@ -30,7 +24,7 @@ const changeEvent = () => {
       </div>
     </div>
     <div>
-      <el-radio-group
+      <!-- <el-radio-group
         v-model="radio"
         size="large"
         fill="#409eff"
@@ -38,7 +32,8 @@ const changeEvent = () => {
       >
         <el-radio-button label="普通对话" value="1" />
         <el-radio-button label="知识库问答" value="2" />
-      </el-radio-group>
+      </el-radio-group> -->
+      <slot></slot>
     </div>
     <img
       src="../assets/setting.svg"

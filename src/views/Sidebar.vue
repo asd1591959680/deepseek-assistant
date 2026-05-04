@@ -33,7 +33,7 @@ const newMsg = () => {
 };
 const deleteMsg = (id: string) => {
   emit("deleteMsg", id);
-  drawer.value = false;
+  // drawer.value = false;
   visible.value = false;
 };
 const chooseMore = (id: string) => {

@@ -4,6 +4,15 @@ export interface Message {
   content: string;
   timestamp: number;
   isStreaming?: boolean;
+  sources?: RetrievedChunk[];
+}
+export interface ChatMessage {
+  id: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  createdAt: Date;
+  sources?: RetrievedChunk[];
+  isStreaming?: boolean;
 }
 export interface Conversation {
   id: string;
@@ -38,15 +47,6 @@ export interface KnowledgeDocument {
   createdAt: Date;
   status: "processing" | "ready" | "error";
   errorMsg?: string;
-}
-
-export interface ChatMessage {
-  id: string;
-  role: "user" | "assistant" | "system";
-  content: string;
-  createdAt: Date;
-  sources?: RetrievedChunk[];
-  isStreaming?: boolean;
 }
 
 export interface RetrievedChunk {

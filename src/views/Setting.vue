@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { reactive } from "vue";
+import { onMounted, reactive } from "vue";
 const emit = defineEmits(["updateSetting"]);
 const isShow = defineModel("isShow");
 const ruleForm = reactive({
-  key: "sk-d774cde3615c473f800e6ffb3f562144",
+  key: "",
   // url: "",
   modelNm: "deepseek-v4-flash",
   temperature: 0.7,
@@ -35,6 +35,15 @@ const saveSettings = () => {
 const clickItem = (id: string) => {
   ruleForm.modelNm = id;
 };
+const getAPIKey = () => {
+  ruleForm.key = "sk-d774cde3615c473f800e6ffb3f562144";
+};
+onMounted(() => {
+  const data = localStorage.getItem("dp-assist-settings");
+  if (data) {
+    ruleForm.key = JSON.parse(data).apiKey;
+  }
+});
 </script>
 <template>
   <div class="page-container">
@@ -54,12 +63,14 @@ const clickItem = (id: string) => {
           label-width="auto"
           label-position="left"
         >
-          <el-form-item
-            label="API Key(默认API)"
-            prop="key"
-            label-position="top"
-          >
-            <el-input type="password" v-model="ruleForm.key" clearable />
+          <el-form-item label="API Key" prop="key" label-position="top">
+            <el-input type="password" v-model="ruleForm.key" clearable>
+              <template #suffix>
+                <el-button size="small" @click="getAPIKey"
+                  >点击获取API</el-button
+                >
+              </template>
+            </el-input>
           </el-form-item>
           <!-- <el-form-item label="API地址" prop="url" label-position="top">
             <el-input v-model="ruleForm.url" />

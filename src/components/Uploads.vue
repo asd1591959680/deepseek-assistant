@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { useRagStore } from "@/store";
-
+// import { uploadDoc } from "@/api";
 const store = useRagStore();
 const fileInput = ref<HTMLInputElement | null>(null);
 const isDragging = ref(false);
@@ -24,7 +24,11 @@ const onDrop = async (e: DragEvent) => {
 
 const processFiles = async (files: File[]) => {
   for (const file of files) {
+    // 前端向量化处理文件
     await store.addDocument(file);
+    // 后端向量化处理文件
+    // const res = await uploadDoc(file);
+    // console.log(res);
   }
 };
 </script>
@@ -56,17 +60,6 @@ const processFiles = async (files: File[]) => {
       </p> -->
       <!-- <p class="drop-formats font-mono">TXT · MD · PDF · DOCX</p> -->
     </div>
-
-    <!-- 状态栏 -->
-    <!-- <div class="stats-bar font-mono">
-      <span>{{ store.totalChunks }} chunks</span>
-      <span class="stat-sep">·</span>
-      <span>top-{{ store.topK }} 检索</span>
-      <div class="top-k-ctrl">
-        <button @click="store.topK = Math.max(1, store.topK - 1)">−</button>
-        <button @click="store.topK = Math.min(20, store.topK + 1)">+</button>
-      </div>
-    </div> -->
   </div>
 </template>
 
@@ -79,8 +72,8 @@ const processFiles = async (files: File[]) => {
 }
 
 .drop-zone {
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
+  /* border: 1px dashed rgba(255, 255, 255, 0.12); */
+  /* border-radius: 8px; */
   padding: 5px;
   text-align: center;
   cursor: pointer;

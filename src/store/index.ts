@@ -16,7 +16,7 @@ import type {
 } from "@/types";
 import { useEmbedding } from "@/hooks/useEmbedding";
 import { splitTextIntoChunks, extractTextFromFile } from "@/utils/textSplitter";
-import { ElMessage } from "element-plus";
+
 const RAG_SYSTEM_PROMPT = `你是一个专业的知识库助手。请基于以下检索到的上下文内容来回答用户的问题。
 如果上下文中没有相关信息，请诚实地告知用户，不要编造答案。
 回答时请引用具体的文档内容，并保持简洁专业。
@@ -103,7 +103,7 @@ export const useRagStore = defineStore("rag", () => {
       // 提取文本
       processingMessage.value = `正在解析文档：${file.name},请稍等...`;
       const rawText = await extractTextFromFile(file);
-      ElMessage.warning(processingMessage.value);
+
       if (!rawText.trim()) throw new Error("文档内容为空");
 
       // 切分文本块

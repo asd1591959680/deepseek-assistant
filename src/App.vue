@@ -100,7 +100,7 @@ watch(
   transform: translateX(-50%);
 }
 .messages {
-  height: 75vh;
+  height: 70vh;
   overflow-y: auto;
   scroll-behavior: smooth;
 }

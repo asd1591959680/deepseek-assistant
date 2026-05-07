@@ -1,3 +1,4 @@
+import { extractTextFromPDF } from "./pdfLoader";
 //将文本拆分为用于 RAG 的重叠块
 export function splitTextIntoChunks(
   text: string,
@@ -51,7 +52,7 @@ export async function extractTextFromFile(file: File): Promise<string> {
   }
 
   if (ext === "pdf") {
-    return await extractFromPDF(file);
+    return await extractTextFromPDF(file);
   }
 
   if (ext === "docx") {
@@ -59,32 +60,6 @@ export async function extractTextFromFile(file: File): Promise<string> {
   }
 
   throw new Error(`不支持的文件类型: .${ext}`);
-}
-
-async function extractFromPDF(file: File): Promise<string> {
-  const { getDocument, GlobalWorkerOptions } = await import("pdfjs-dist");
-  GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.3.136/pdf.worker.min.mjs`;
-
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await getDocument({ data: arrayBuffer }).promise;
-  const textParts: string[] = [];
-
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const textContent = await page.getTextContent();
-    const pageText = textContent.items
-      .map((item) => {
-        // 类型守卫：检查是否有 str 属性
-        if ("str" in item) {
-          return item.str;
-        }
-        return "";
-      })
-      .join(" ");
-    textParts.push(pageText);
-  }
-
-  return textParts.join("\n\n");
 }
 
 async function extractFromDOCX(file: File): Promise<string> {

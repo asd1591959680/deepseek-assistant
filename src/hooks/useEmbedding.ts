@@ -1,12 +1,31 @@
-import { ref, readonly } from "vue";
+import { ref, readonly, shallowRef } from "vue";
 import type { EmbeddingProgress } from "@/types";
 
-type FeatureExtractionPipeline = (
-  texts: string | string[],
-  opts?: Record<string, unknown>,
-) => Promise<{ data: Float32Array | number[] }>;
+// ============================================================
+// 类型定义
+// ============================================================
+type WorkerOutMessage =
+  | { type: "progress"; progress: number; message: string }
+  | { type: "init:done" }
+  | { type: "init:error"; message: string }
+  | { type: "embed:progress"; id: string; current: number; total: number }
+  | { type: "embed:done"; id: string; vectors: number[][] }
+  | { type: "embed:error"; id: string; message: string };
 
-let pipeline: FeatureExtractionPipeline | null = null;
+type ProgressCallback = (current: number, total: number) => void;
+
+type PendingTask = {
+  resolve: (vectors: number[][]) => void;
+  reject: (err: Error) => void;
+  onProgress?: ProgressCallback;
+};
+
+// ============================================================
+// 模块级单例
+// ============================================================
+const worker = shallowRef<Worker | null>(null);
+const pendingTasks = new Map<string, PendingTask>();
+let taskCounter = 0;
 
 const progress = ref<EmbeddingProgress>({
   status: "idle",
@@ -14,90 +33,150 @@ const progress = ref<EmbeddingProgress>({
   message: "尚未初始化",
 });
 
-const MODEL_ID = "Xenova/all-MiniLM-L6-v2";
+let initPromise: Promise<void> | null = null;
+let resolveInit: (() => void) | null = null;
+let rejectInit: ((err: Error) => void) | null = null;
 
+// ============================================================
+// 创建 Worker
+// ============================================================
+function createWorker(): Worker {
+  const w = new Worker(
+    new URL("../workers/embedding.worker.ts", import.meta.url),
+    { type: "module" },
+  );
+
+  w.addEventListener("message", (event: MessageEvent<WorkerOutMessage>) => {
+    const msg = event.data;
+
+    switch (msg.type) {
+      case "progress":
+        progress.value = {
+          status: "loading",
+          progress: msg.progress,
+          message: msg.message,
+        };
+        break;
+
+      case "init:done":
+        progress.value = {
+          status: "ready",
+          progress: 100,
+          message: "模型已就绪",
+        };
+        resolveInit?.();
+        break;
+
+      case "init:error":
+        progress.value = {
+          status: "error",
+          progress: 0,
+          message: `模型加载失败: ${msg.message}`,
+        };
+        rejectInit?.(new Error(msg.message));
+        break;
+
+      case "embed:progress": {
+        const task = pendingTasks.get(msg.id);
+        if (task?.onProgress) {
+          task.onProgress(msg.current, msg.total);
+        }
+        break;
+      }
+
+      case "embed:done": {
+        const task = pendingTasks.get(msg.id);
+        if (task) {
+          task.resolve(msg.vectors);
+          pendingTasks.delete(msg.id);
+        }
+        break;
+      }
+
+      case "embed:error": {
+        const task = pendingTasks.get(msg.id);
+        if (task) {
+          task.reject(new Error(msg.message));
+          pendingTasks.delete(msg.id);
+        }
+        break;
+      }
+    }
+  });
+
+  w.addEventListener("error", (e) => {
+    console.error("Worker 错误:", e);
+    progress.value = {
+      status: "error",
+      progress: 0,
+      message: `Worker 异常: ${e.message}`,
+    };
+  });
+
+  return w;
+}
+
+// ============================================================
+// Composable
+// ============================================================
 export function useEmbedding() {
-  async function initPipeline() {
-    if (pipeline) return;
+  async function initPipeline(): Promise<void> {
+    if (initPromise) return initPromise;
+
+    initPromise = new Promise<void>((resolve, reject) => {
+      resolveInit = resolve;
+      rejectInit = reject;
+    });
+
     progress.value = {
       status: "loading",
       progress: 0,
       message: "正在加载嵌入模型...",
     };
 
-    try {
-      const { pipeline: createPipeline, env } =
-        await import("@xenova/transformers");
-      // ===== 关键配置：本地模型 =====
-      env.allowLocalModels = true;
-      // 重要：路径要以斜杠开头，结尾不带斜杠
-      env.localModelPath = "/models";
-
-      // env.allowLocalModels = false;
-      // env.remoteHost = "http://localhost:5174/hf-api";
-
-      const pipe = await createPipeline("feature-extraction", MODEL_ID, {
-        progress_callback: (p: {
-          progress?: number;
-          status?: string;
-          file?: string;
-        }) => {
-          if (p.progress !== undefined) {
-            progress.value = {
-              status: "loading",
-              progress: Math.round(p.progress),
-              message: `加载模型文件中... ${Math.round(p.progress)}%`,
-            };
-          }
-        },
-      });
-
-      pipeline = async (
-        texts: string | string[],
-        opts?: Record<string, unknown>,
-      ) => {
-        const result = await pipe(texts, opts);
-        return result as { data: Float32Array | number[] };
-      };
-
-      progress.value = {
-        status: "ready",
-        progress: 100,
-        message: `模型已就绪：${MODEL_ID}`,
-      };
-    } catch (e) {
-      console.error("完整错误:", e);
-      progress.value = {
-        status: "error",
-        progress: 0,
-        message: `模型加载失败: ${(e as Error).message}`,
-      };
-      throw e;
+    if (!worker.value) {
+      worker.value = createWorker();
     }
+
+    worker.value.postMessage({ type: "init" });
+
+    return initPromise;
   }
 
   async function embed(text: string): Promise<number[]> {
-    if (!pipeline) await initPipeline();
-
-    const output = await pipeline!(text, {
-      pooling: "mean",
-      normalize: true,
-    });
-
-    // output.data 的类型为 Float32Array
-    return Array.from(output.data as Float32Array);
+    const vectors = await embedBatch([text]);
+    return vectors[0];
   }
 
   async function embedBatch(
     texts: string[],
-    onProgress?: (i: number, total: number) => void,
+    onProgress?: ProgressCallback,
   ): Promise<number[][]> {
-    const results: number[][] = [];
-    for (let i = 0; i < texts.length; i++) {
-      results.push(await embed(texts[i]));
-      onProgress?.(i + 1, texts.length);
+    if (!worker.value) {
+      throw new Error("请先调用 initPipeline()");
     }
-    return results;
+
+    const id = `task_${++taskCounter}_${Date.now()}`;
+
+    return new Promise<number[][]>((resolve, reject) => {
+      pendingTasks.set(id, { resolve, reject, onProgress });
+
+      worker.value!.postMessage({
+        type: "embed",
+        id,
+        texts,
+      });
+    });
+  }
+
+  function terminate() {
+    worker.value?.terminate();
+    worker.value = null;
+    initPromise = null;
+    resolveInit = null;
+    rejectInit = null;
+    pendingTasks.clear();
+    progress.value = { status: "idle", progress: 0, message: "尚未初始化" };
   }
 
   return {
@@ -105,5 +184,6 @@ export function useEmbedding() {
     initPipeline,
     embed,
     embedBatch,
+    terminate,
   };
 }

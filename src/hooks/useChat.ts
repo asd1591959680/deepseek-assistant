@@ -7,7 +7,6 @@ import type {
 } from "../types";
 import { computed, ref, watch } from "vue";
 import { ElMessage } from "element-plus";
-const SETTINGS_KEY = "dp-assist-settings";
 const STORAGE_KEY = "dp-assist-conversations";
 const RAG_SYSTEM_PROMPT = `你是一个专业的知识库助手。请基于以下检索到的上下文内容来回答用户的问题。
 如果上下文中没有相关信息，请诚实地告知用户，不要编造答案。
@@ -26,22 +25,7 @@ function loadConversations(): Conversation[] {
     return [];
   }
 }
-function loadSettings(): ChatSettings {
-  try {
-    const data = localStorage.getItem(SETTINGS_KEY);
-    if (data) {
-      return JSON.parse(data);
-    }
-  } catch {
-    /* 忽略 */
-  }
-  return {
-    apiKey: "",
-    model: "deepseek-v4-flash",
-    systemPrompt: "你是一个有用的AI助手。",
-    temperature: 0.7,
-  };
-}
+
 export function useChat() {
   //读取本地数据对话列表
   const conversations = ref<Conversation[]>(loadConversations());
@@ -50,7 +34,12 @@ export function useChat() {
   const isLoading = ref(false);
   const abortController = ref<AbortController | null>(null);
   //读取本地数据设置
-  const settings = ref<ChatSettings>(loadSettings());
+  const settings = ref<ChatSettings>({
+    apiKey: "",
+    model: "",
+    systemPrompt: "",
+    temperature: 0.7,
+  });
   //监听对话列表变化，动态更新当前对话
   const currentConversation = computed(() =>
     conversations.value.find((c) => c.id === currentId.value),
@@ -68,14 +57,7 @@ export function useChat() {
     },
     { deep: true },
   );
-  // 持久化设置到本地存储
-  watch(
-    settings,
-    (val) => {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(val));
-    },
-    { deep: true },
-  );
+
   // 新建对话
   function createConversation() {
     const conv: Conversation = {
@@ -214,10 +196,7 @@ export function useChat() {
       if (streaming) streaming.isStreaming = false;
     }
   }
-  // 更新设置
-  function updateSettings(newSettings: ChatSettings) {
-    settings.value = { ...newSettings };
-  }
+
   return {
     conversations,
     currentId,
@@ -231,6 +210,5 @@ export function useChat() {
     switchConversation,
     sendMessage,
     stopGeneration,
-    updateSettings,
   };
 }

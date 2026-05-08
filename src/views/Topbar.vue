@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useRagStore } from "@/store";
 const emit = defineEmits(["right", "left"]);
 const openRight = () => {
   emit("right", true);
@@ -19,7 +18,7 @@ const openLeft = () => {
         @click="openLeft"
       />
       <div class="status">
-        <p>deepseek 智能助手</p>
+        <p>deepseek</p>
         <p v-if="false" class="text">未配置API Key</p>
       </div>
     </div>

@@ -5,7 +5,7 @@ import ChatInput from "./views/ChatInput.vue";
 import { useChat } from "./hooks/useChat";
 import Message from "./views/Message.vue";
 import Setting from "./views/Setting.vue";
-import { nextTick, ref, watch } from "vue";
+import { nextTick, onMounted, ref, watch } from "vue";
 import Sidebar from "./views/Sidebar.vue";
 import ModelStatus from "@/components/ModelStatus.vue";
 import { useRagStore } from "@/store";
@@ -13,7 +13,6 @@ import { useRagStore } from "@/store";
 const {
   sendMessage,
   currentMessages,
-  updateSettings,
   createConversation,
   conversations,
   switchConversation,
@@ -36,17 +35,13 @@ const handleSend = async (content: string) => {
   //   await sendMessage(content);
   // }
 };
-const settingFun = (setting: any) => {
-  updateSettings({
-    apiKey: setting.key,
-    model: setting.modelNm,
-    systemPrompt: setting.systemPrompt,
-    temperature: setting.temperature,
-  });
-};
+
 const handleNewMsg = () => {
   createConversation();
 };
+onMounted(() => {
+  settings.value = rag.settings;
+});
 // 自动滚动到底部
 watch(
   currentMessages,
@@ -82,7 +77,7 @@ watch(
     @stop="stopGeneration"
     :isLoading="isLoading"
   ></ChatInput>
-  <Setting v-model:isShow="isShow" @update-setting="settingFun"></Setting>
+  <Setting v-model:isShow="isShow"></Setting>
   <Sidebar
     v-model:drawer="drawer"
     @new-msg="handleNewMsg"

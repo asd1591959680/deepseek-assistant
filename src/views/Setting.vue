@@ -1,17 +1,19 @@
 <script setup lang="ts">
-import { onMounted, reactive } from "vue";
+import { onMounted, reactive, ref } from "vue";
+import { useRagStore } from "@/store";
+import type { ElForm } from "element-plus";
 const emit = defineEmits(["updateSetting"]);
+const rag = useRagStore();
 const isShow = defineModel("isShow");
-const ruleForm = reactive({
-  key: "",
-  // url: "",
-  modelNm: "deepseek-v4-flash",
+const ruleFormRef = ref<InstanceType<typeof ElForm> | null>(null);
+let ruleForm = reactive({
+  apiKey: "",
+  model: "",
+  systemPrompt: "",
   temperature: 0.7,
-  // maxLength: 3150,
-  systemPrompt: "你是一个有用的AI助手。",
 });
 const rules = reactive({
-  key: [{ required: true, message: "请输入", trigger: "blur" }],
+  apiKey: [{ required: true, message: "请输入", trigger: "blur" }],
 });
 const modelOptions = reactive([
   {
@@ -25,24 +27,19 @@ const modelOptions = reactive([
     description: "深度推理模型，适合复杂逻辑推理",
   },
 ]);
-const changeFun = () => {
+const cancel = () => {
   isShow.value = false;
+  ruleFormRef.value?.resetFields();
 };
 const saveSettings = () => {
-  emit("updateSetting", ruleForm);
+  rag.settings = ruleForm;
   isShow.value = false;
 };
 const clickItem = (id: string) => {
-  ruleForm.modelNm = id;
-};
-const getAPIKey = () => {
-  ruleForm.key = "sk-d774cde3615c473f800e6ffb3f562144";
+  ruleForm.model = id;
 };
 onMounted(() => {
-  const data = localStorage.getItem("dp-assist-settings");
-  if (data) {
-    ruleForm.key = JSON.parse(data).apiKey;
-  }
+  ruleForm = rag.settings;
 });
 </script>
 <template>
@@ -53,6 +50,7 @@ onMounted(() => {
       width="80%"
       center
       class="setting-dialog"
+      destroy-on-close
     >
       <div>
         <el-form
@@ -63,23 +61,23 @@ onMounted(() => {
           label-width="auto"
           label-position="left"
         >
-          <el-form-item label="API Key" prop="key" label-position="top">
-            <el-input type="password" v-model="ruleForm.key" clearable>
-              <template #suffix>
+          <el-form-item label="API Key" prop="apiKey" label-position="top">
+            <el-input type="password" v-model="ruleForm.apiKey" clearable>
+              <!-- <template #suffix>
                 <el-button size="small" @click="getAPIKey"
                   >点击获取API</el-button
                 >
-              </template>
+              </template> -->
             </el-input>
           </el-form-item>
           <!-- <el-form-item label="API地址" prop="url" label-position="top">
             <el-input v-model="ruleForm.url" />
           </el-form-item> -->
-          <el-form-item label="模型选择" prop="modelNm" label-position="top">
+          <el-form-item label="模型选择" prop="model" label-position="top">
             <div
               v-for="item in modelOptions"
               :key="item.id"
-              :class="['model-wrap', { active: ruleForm.modelNm === item.id }]"
+              :class="['model-wrap', { active: ruleForm.model === item.id }]"
               @click="clickItem(item.id)"
             >
               <div>{{ item.name }}</div>
@@ -121,7 +119,7 @@ onMounted(() => {
       </div>
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="changeFun">取消</el-button>
+          <el-button @click="cancel">取消</el-button>
           <el-button type="primary" @click="saveSettings"> 保存设置 </el-button>
         </div>
       </template>

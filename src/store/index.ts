@@ -13,6 +13,7 @@ import type {
   ChatMessage,
   RetrievedChunk,
   LLMConfig,
+  ChatSettings,
 } from "@/types";
 import { useEmbedding } from "@/hooks/useEmbedding";
 import { splitTextIntoChunks, extractTextFromFile } from "@/utils/textSplitter";
@@ -63,6 +64,12 @@ export const useRagStore = defineStore("rag", () => {
   const processingMessage = ref("");
   const topK = ref(5);
   const isKnow = ref(false);
+  const settings = ref<ChatSettings>({
+    apiKey: "sk-d774cde3615c473f800e6ffb3f562144",
+    model: "deepseek-v4-flash",
+    systemPrompt: "你是一个有用的AI助手。",
+    temperature: 0.7,
+  });
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let db: Orama<any> | null = null; // Orama数据库实例
 
@@ -217,5 +224,6 @@ export const useRagStore = defineStore("rag", () => {
     retrieve,
     clearHistory,
     isKnow,
+    settings,
   };
 });

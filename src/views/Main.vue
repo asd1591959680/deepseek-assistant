@@ -1,8 +1,8 @@
 <template>
   <div class="page-container">
-    <div v-if="props.apiKey">
+    <div>
       <img src="../assets/ai.svg" alt="" />
-      <div>欢迎使用 DeepSeek assist</div>
+      <div>欢迎使用 DeepSeek 智能助手</div>
       <div>
         <p>
           基于国产大语言模型的智能对话助手，支持流式输出、Markdown渲染、代码高亮等功能
@@ -10,11 +10,11 @@
         <p>支持文件上传、知识库问答等功能</p>
       </div>
     </div>
-    <div v-else class="need-api">
+    <!-- <div  class="need-api">
       <p>需要配置 API Key</p>
       <p class="text2">请在设置中输入你的 DeepSeek API Key 以开始对话</p>
       <el-button type="primary" @click="openSetting">打开设置</el-button>
-    </div>
+    </div> -->
   </div>
 </template>
 <script setup lang="ts">
@@ -25,9 +25,9 @@ const props = defineProps({
   },
 });
 const emit = defineEmits(["open"]);
-const openSetting = () => {
-  emit("open");
-};
+// const openSetting = () => {
+//   emit("open");
+// };
 </script>
 <style lang="scss" scoped>
 .page-container {
